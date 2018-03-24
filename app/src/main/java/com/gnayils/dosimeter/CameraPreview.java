@@ -17,6 +17,8 @@ import android.view.SurfaceView;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /** A basic Camera preview class */
@@ -27,6 +29,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private SurfaceHolder mHolder;
     private Camera mCamera;
 
+    private int previewWidth;
+    private int previewHeight;
     private byte[] frameBuffer;
 
     private HandlerThread handlerThread;
@@ -64,14 +68,32 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         }
 
         Camera.Parameters parameters = mCamera.getParameters();
-        frameBuffer = new byte[parameters.getPreviewSize().width * parameters.getPreviewSize().height * 3 / 2];
         List<String> allFocus = parameters.getSupportedFocusModes();
         if(allFocus.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)){
             parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
         } else if(allFocus.contains(Camera.Parameters.FLASH_MODE_AUTO)){
             parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
         }
+        Camera.Size miniSize = Collections.min(parameters.getSupportedPreviewSizes(), new Comparator<Camera.Size>() {
+            @Override
+            public int compare(Camera.Size o1, Camera.Size o2) {
+                return Integer.signum(o1.width * o1.height -  o2.width * o2.height);
+            }
+        });
+        parameters.setPreviewSize(miniSize.width, miniSize.height);
         mCamera.setParameters(parameters);
+
+        previewWidth = parameters.getPreviewSize().width;
+        previewHeight = parameters.getPreviewSize().height;
+        frameBuffer = new byte[previewWidth * previewHeight * 3 / 2];
+
+
+//        System.out.println("parameters.getPreviewFormat(): " + parameters.get("preview-format"));
+//        for(Camera.Size size : parameters.getSupportedPictureSizes()) {
+//            System.out.println(size.width + " " + size.height);
+//        }
+//        System.out.println(parameters.getPreviewSize().width + " " + parameters.getPreviewSize().height);
+
     }
 
 
@@ -110,9 +132,34 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         }
     }
 
+    int i = 0;
+    boolean b = true;
+
     @Override
     public void onPreviewFrame(byte[] data, Camera camera) {
-        System.out.println(Thread.currentThread().getName() + ", on preview frame: " + camera.getParameters().getPreviewFormat() + " " + camera.getParameters().getPreviewSize().width + " " + camera.getParameters().getPreviewSize().height);
+        if(b && i % 50 == 0) {
+            StringBuilder sb = new StringBuilder();
+            for(int i = 0; i < previewWidth * previewHeight; i++) {
+                int luminance = data[i] & 0xFF;
+                char c;
+                if (luminance < 0x40) {
+                    c = '#';
+                } else if (luminance < 0x80) {
+                    c = '+';
+                } else if (luminance < 0xC0) {
+                    c = '.';
+                } else {
+                    c = ' ';
+                }
+                sb.append(c);
+                if(i > 0 && i % previewWidth == 0) {
+                    System.out.println(sb.toString());
+                    sb = new StringBuilder();
+                }
+            }
+        }
+        i ++ ;
+        System.out.println(Thread.currentThread().getName());
         mCamera.addCallbackBuffer(frameBuffer);
     }
 }
