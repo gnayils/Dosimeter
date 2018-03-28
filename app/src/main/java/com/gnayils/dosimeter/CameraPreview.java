@@ -33,6 +33,9 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private int previewHeight;
     private byte[] frameBuffer;
 
+    private int pixelCount;
+    private double maxLuminance;
+
     private HandlerThread handlerThread;
     private Handler handler;
 
@@ -74,6 +77,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         } else if(allFocus.contains(Camera.Parameters.FLASH_MODE_AUTO)){
             parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
         }
+        /**
         Camera.Size miniSize = Collections.min(parameters.getSupportedPreviewSizes(), new Comparator<Camera.Size>() {
             @Override
             public int compare(Camera.Size o1, Camera.Size o2) {
@@ -81,18 +85,21 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             }
         });
         parameters.setPreviewSize(miniSize.width, miniSize.height);
-        mCamera.setParameters(parameters);
+        mCamera.setParameters(parameters);*/
 
         previewWidth = parameters.getPreviewSize().width;
         previewHeight = parameters.getPreviewSize().height;
         frameBuffer = new byte[previewWidth * previewHeight * 3 / 2];
+        pixelCount = previewWidth * previewHeight;
+        maxLuminance = pixelCount * 255;
+        System.out.println("max luminance: " + maxLuminance);
 
-
-//        System.out.println("parameters.getPreviewFormat(): " + parameters.get("preview-format"));
-//        for(Camera.Size size : parameters.getSupportedPictureSizes()) {
-//            System.out.println(size.width + " " + size.height);
-//        }
-//        System.out.println(parameters.getPreviewSize().width + " " + parameters.getPreviewSize().height);
+        /**
+        System.out.println("parameters.getPreviewFormat(): " + parameters.get("preview-format"));
+        for(Camera.Size size : parameters.getSupportedPictureSizes()) {
+            System.out.println(size.width + " " + size.height);
+        }
+        System.out.println(parameters.getPreviewSize().width + " " + parameters.getPreviewSize().height);*/
 
     }
 
@@ -125,41 +132,22 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     }
 
     private boolean hasCamera() {
-        if (getContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)){
+        if (getContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
             return true;
         } else {
             return false;
         }
     }
 
-    int i = 0;
-    boolean b = true;
-
     @Override
     public void onPreviewFrame(byte[] data, Camera camera) {
-        if(b && i % 50 == 0) {
-            StringBuilder sb = new StringBuilder();
-            for(int i = 0; i < previewWidth * previewHeight; i++) {
-                int luminance = data[i] & 0xFF;
-                char c;
-                if (luminance < 0x40) {
-                    c = '#';
-                } else if (luminance < 0x80) {
-                    c = '+';
-                } else if (luminance < 0xC0) {
-                    c = '.';
-                } else {
-                    c = ' ';
-                }
-                sb.append(c);
-                if(i > 0 && i % previewWidth == 0) {
-                    System.out.println(sb.toString());
-                    sb = new StringBuilder();
-                }
+        int totalLuminance = 0;
+        for(int i = 0; i < pixelCount; i++) {
+            if(data[i] >= 20) {
+                totalLuminance += data[i] & 0xff;
             }
         }
-        i ++ ;
-        System.out.println(Thread.currentThread().getName());
+        System.out.println("luminance: " + totalLuminance);
         mCamera.addCallbackBuffer(frameBuffer);
     }
 }

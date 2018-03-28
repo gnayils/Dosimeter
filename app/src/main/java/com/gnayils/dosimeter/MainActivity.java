@@ -1,7 +1,5 @@
 package com.gnayils.dosimeter;
 
-import android.content.pm.PackageManager;
-import android.hardware.Camera;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -10,8 +8,7 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.FrameLayout;
-
-import java.io.IOException;
+import android.widget.LinearLayout;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -32,8 +29,8 @@ public class MainActivity extends AppCompatActivity {
         });
 
         mPreview = new CameraPreview(this);
-        FrameLayout preview =  findViewById(R.id.camera_preview);
-        preview.addView(mPreview);
+        FrameLayout previewContainer =  findViewById(R.id.frame_layout_preview_container);
+        previewContainer.addView(mPreview, 0);
     }
 
     @Override
