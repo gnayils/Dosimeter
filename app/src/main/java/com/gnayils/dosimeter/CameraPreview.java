@@ -6,19 +6,21 @@ package com.gnayils.dosimeter;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.content.res.Configuration;
-import android.graphics.ImageFormat;
+import android.graphics.Bitmap;
 import android.hardware.Camera;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.Message;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.ArrayList;
 import java.util.List;
 
 /** A basic Camera preview class */
@@ -33,27 +35,40 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private int previewHeight;
     private byte[] frameBuffer;
 
+    private boolean isCalculateDose;
     private int pixelCount;
     private double maxLuminance;
 
-    private HandlerThread handlerThread;
-    private Handler handler;
+    private HandlerThread cameraHandlerThread;
+    private Handler cameraHandler;
 
-    public CameraPreview(Context context) {
+    private Handler messageHandler;
+
+    private static final double COEFFICIENT_A = 13;
+    private static final double COEFFICIENT_B = 0.8956;
+    private static final double COEFFICIENT_C = -2.223;
+    private static final int LUMINANCE_VALUE_THRESHOLD = 13;
+
+    private String sdcardPath;
+
+    public CameraPreview(Context context, Handler messageHandler) {
         super(context);
+        this.messageHandler = messageHandler;
 
-        handlerThread = new HandlerThread("CameraBackground");
-        handlerThread.start();
-        handler = new Handler(handlerThread.getLooper());
+        cameraHandlerThread = new HandlerThread("CameraBackground");
+        cameraHandlerThread.start();
+        cameraHandler = new Handler(cameraHandlerThread.getLooper());
 
         mHolder = getHolder();
         mHolder.addCallback(this);
         mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+
+        sdcardPath = Environment.getExternalStorageDirectory().getAbsolutePath();
     }
 
     public void surfaceCreated(SurfaceHolder holder) {
         try {
-            handler.post(new Runnable() {
+            cameraHandler.post(new Runnable() {
 
                 @Override
                 public void run() {
@@ -83,16 +98,19 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             public int compare(Camera.Size o1, Camera.Size o2) {
                 return Integer.signum(o1.width * o1.height -  o2.width * o2.height);
             }
-        });
-        parameters.setPreviewSize(miniSize.width, miniSize.height);
-        mCamera.setParameters(parameters);*/
+        });*/
+
+
+
+        parameters.setPreviewSize(1280, 720);
+        mCamera.setParameters(parameters);
 
         previewWidth = parameters.getPreviewSize().width;
         previewHeight = parameters.getPreviewSize().height;
         frameBuffer = new byte[previewWidth * previewHeight * 3 / 2];
         pixelCount = previewWidth * previewHeight;
         maxLuminance = pixelCount * 255;
-        System.out.println("max luminance: " + maxLuminance);
+
 
         /**
         System.out.println("parameters.getPreviewFormat(): " + parameters.get("preview-format"));
@@ -131,6 +149,10 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         }
     }
 
+    public void toggleDoseCalculation() {
+        isCalculateDose = !isCalculateDose;
+    }
+
     private boolean hasCamera() {
         if (getContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
             return true;
@@ -139,15 +161,46 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         }
     }
 
+    private List<long[]> list = new ArrayList<>();
+
     @Override
     public void onPreviewFrame(byte[] data, Camera camera) {
-        int totalLuminance = 0;
+        mCamera.addCallbackBuffer(frameBuffer);
+        if(!isCalculateDose) return;
+
+        int totalLuminanceValuePerFrame = 0;
+        int totalCountPerFrame = 0;
         for(int i = 0; i < pixelCount; i++) {
-            if(data[i] >= 20) {
-                totalLuminance += data[i] & 0xff;
+            if(data[i] >= LUMINANCE_VALUE_THRESHOLD) {
+                totalCountPerFrame ++;
+                totalLuminanceValuePerFrame += data[i] & 0xff;
             }
         }
-        System.out.println("luminance: " + totalLuminance);
-        mCamera.addCallbackBuffer(frameBuffer);
+        if(totalCountPerFrame > 4) {
+            list.add(new long[] {totalLuminanceValuePerFrame, totalCountPerFrame});
+        }
+
+        if(list.size() >= 10) {
+            long totalCount = 0, totalLuminanceValue = 0;
+            for(int i=1; i<list.size() - 2; i++) {
+                long[] longs = list.get(i);
+                totalLuminanceValue += longs[0];
+                totalCount += longs[1];
+            }
+
+            double averageLuminanceValue = ((double) totalLuminanceValue) / totalCount;
+            double averageCount = ((double)totalCount) / (list.size() - 2);
+
+            double dose = (averageCount / (100 + (averageLuminanceValue - 24) * 98)) * 1.25;
+            Message message = messageHandler.obtainMessage();
+            message.what = 2;
+            message.obj = dose;
+            messageHandler.sendMessage(message);
+            list.clear();
+        }
+    }
+
+    private double calculateDose(double count, double mean) {
+        return Math.pow(count, COEFFICIENT_B) * Math.pow(Math.max(0, mean - COEFFICIENT_A), COEFFICIENT_C);
     }
 }
