@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">Dosimeter</string>
     <string name="action_settings">Settings</string>
+
+    <string name="request_permission">This application needs camera permission to open camera detect the X-Ray radiation.</string>
+    <string name="camera_error">This device doesn\'t support Camera2 API.</string>
 </resources>
