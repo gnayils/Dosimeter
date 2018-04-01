@@ -18,19 +18,22 @@ import android.widget.FrameLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.anderson.dashboardview.view.DashboardView;
+
 public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_CAMERA_PERMISSION = 1;
 
-    private ScrollView scrollView;
-    private TextView textView;
     private CameraPreview cameraPreview;
+
+    private DashboardView dashboardView;
+
     private Handler handler = new Handler() {
 
         @Override
         public void handleMessage(Message msg) {
-            textView.append(msg.obj + "\n");
-            scrollView.fullScroll(ScrollView.FOCUS_DOWN);
+            double dose = (double) msg.obj;
+            dashboardView.setPercent((int) (dose > 100 ? 100 : dose));
         }
     };
 
@@ -42,8 +45,7 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        scrollView =  findViewById(R.id.scroll_view);
-        textView =  findViewById(R.id.text_view);
+        dashboardView = findViewById(R.id.dashboard_view);
 
         cameraPreview = new CameraPreview(this, handler);
 
@@ -51,7 +53,6 @@ public class MainActivity extends AppCompatActivity {
         fabClear.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                textView.setText("");
             }
         });
 

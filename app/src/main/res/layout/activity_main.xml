@@ -1,57 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/camera_preview_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context="com.gnayils.dosimeter.MainActivity">
 
-
-    <LinearLayout
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:elevation="4dp"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:popupTheme="@style/AppTheme.PopupOverlay" />
 
-        <android.support.v7.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
-            android:layout_gravity="top"
-            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-            app:popupTheme="@style/AppTheme.PopupOverlay" />
-        <ScrollView
-            android:id="@+id/scroll_view"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-            <TextView
-                android:id="@+id/text_view"
-                android:focusable="true"
-                android:focusableInTouchMode="true"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+        <com.anderson.dashboardview.view.DashboardView
+            android:id="@+id/dashboard_view"
+            android:layout_width="280dp"
+            android:layout_height="280dp"
+            android:layout_gravity="top|center"
+            android:layout_marginTop="20dp"
+            android:text="Current Radiation"
+            app:unit="mGy/min"
+            app:progressStrokeWidth="16dp"
+            app:endProgressColor="@color/colorPrimaryDark"
+            app:startProgressColor="@color/colorAccent"
+            app:tikeStrArray="@array/dose"
+            app:tikeStrColor="@color/colorAccent"
+            app:tikeStrSize="10dp"
+            app:startNumber="100"
+            app:maxNumber="1900"
+            app:centerCircleColor="@color/colorPrimary"/>
 
-        </ScrollView>
-    </LinearLayout>
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/fab_clear"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|right"
+            android:layout_marginRight="@dimen/fab_margin"
+            android:layout_marginBottom="88dp"
+            app:srcCompat="@android:drawable/ic_delete" />
 
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab_clear"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|right"
-        android:layout_marginRight="@dimen/fab_margin"
-        android:layout_marginBottom="88dp"
-        app:srcCompat="@android:drawable/ic_delete" />
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/fab_toggle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|right"
+            android:layout_margin="@dimen/fab_margin"
+            app:srcCompat="@android:drawable/ic_menu_camera" />
 
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab_toggle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|right"
-        android:layout_margin="@dimen/fab_margin"
-        app:srcCompat="@android:drawable/ic_menu_camera" />
+    </FrameLayout>
 
-</FrameLayout>
+</LinearLayout>
 

@@ -4,4 +4,14 @@
 
     <string name="request_permission">This application needs camera permission to open camera detect the X-Ray radiation.</string>
     <string name="camera_error">This device doesn\'t support Camera2 API.</string>
+
+    <string-array name="dose">
+        <item>0.01 mGy</item>
+        <item>0.05 mGy</item>
+        <item>0.1 mGy</item>
+        <item>1 mGy</item>
+        <item>10 mGy</item>
+        <item>50 mGy</item>
+        <item>100 mGy</item>
+    </string-array>
 </resources>
