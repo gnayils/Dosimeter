@@ -6,34 +6,51 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.FrameLayout;
-import android.widget.ScrollView;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.anderson.dashboardview.view.DashboardView;
+
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_CAMERA_PERMISSION = 1;
 
     private CameraPreview cameraPreview;
-
     private DashboardView dashboardView;
+    private LinearLayout doseRecordListView;
+    private FloatingActionButton monitorSwitchButton;
 
     private Handler handler = new Handler() {
+
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
 
         @Override
         public void handleMessage(Message msg) {
             double dose = (double) msg.obj;
-            dashboardView.setPercent((int) (dose > 100 ? 100 : dose));
+            dashboardView.setPercent((int) ((dose > 60 ? 60 : dose) / 60 * 100));
+            ViewGroup itemView = (ViewGroup) LayoutInflater.from(MainActivity.this).inflate(R.layout.item_view_dose_value, doseRecordListView, false);
+            ((TextView) itemView.findViewById(R.id.text_view_record_time)).setText(dateFormat.format(Calendar.getInstance().getTime()));
+            ((TextView) itemView.findViewById(R.id.text_view_dose_value)).setText(String.format("%.2f", dose));
+                if(doseRecordListView.getChildCount() > 30) {
+                doseRecordListView.removeViewAt(doseRecordListView.getChildCount() - 1);
+            }
+            doseRecordListView.addView(itemView, 0);
         }
     };
 
@@ -46,21 +63,21 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         dashboardView = findViewById(R.id.dashboard_view);
-
+        doseRecordListView = findViewById(R.id.linear_layout_dose_record);
         cameraPreview = new CameraPreview(this, handler);
 
-        FloatingActionButton fabClear = (FloatingActionButton) findViewById(R.id.fab_clear);
-        fabClear.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-            }
-        });
-
-        FloatingActionButton fabToggle = (FloatingActionButton) findViewById(R.id.fab_toggle);
-        fabToggle.setOnClickListener(new View.OnClickListener() {
+        monitorSwitchButton = findViewById(R.id.fab_toggle);
+        monitorSwitchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 cameraPreview.toggleDoseCalculation();
+                if(cameraPreview.isCalculateDose()) {
+                    monitorSwitchButton.setImageDrawable(getDrawable(R.drawable.ic_pause));
+                    Tooltip.showToast(MainActivity.this, "Start to monitor the radiation around you");
+                } else {
+                    monitorSwitchButton.setImageDrawable(getDrawable(R.drawable.ic_play));
+                    Tooltip.showToast(MainActivity.this, "Monitor stopped");
+                }
             }
         });
     }

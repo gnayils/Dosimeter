@@ -238,6 +238,10 @@ public class CameraPreview implements ImageReader.OnImageAvailableListener {
         isCalculateDose = !isCalculateDose;
     }
 
+    public boolean isCalculateDose() {
+        return isCalculateDose;
+    }
+
     @Override
     public void onImageAvailable(ImageReader reader) {
         Image image = reader.acquireNextImage();
@@ -256,9 +260,8 @@ public class CameraPreview implements ImageReader.OnImageAvailableListener {
             }
         }
         list.add(new long[]{totalLuminanceValuePerFrame, totalLuminanceCountPerFrame});
-        System.out.println("count: " + totalLuminanceCountPerFrame + ", value: " + totalLuminanceValuePerFrame);
 
-        if(list.size() >= 10) {
+        if(list.size() >= 20) {
             long totalLuminanceCount = 0, totalLuminanceValue = 0;
             for(long[] longs : list) {
                 totalLuminanceValue += longs[0];
@@ -279,9 +282,4 @@ public class CameraPreview implements ImageReader.OnImageAvailableListener {
 
         image.close();
     }
-
-    private void onPreviewFrame(byte[] data) {
-
-    }
-
 }

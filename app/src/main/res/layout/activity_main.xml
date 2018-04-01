@@ -21,32 +21,50 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <com.anderson.dashboardview.view.DashboardView
-            android:id="@+id/dashboard_view"
-            android:layout_width="280dp"
-            android:layout_height="280dp"
-            android:layout_gravity="top|center"
-            android:layout_marginTop="20dp"
-            android:text="Current Radiation"
-            app:unit="mGy/min"
-            app:progressStrokeWidth="16dp"
-            app:endProgressColor="@color/colorPrimaryDark"
-            app:startProgressColor="@color/colorAccent"
-            app:tikeStrArray="@array/dose"
-            app:tikeStrColor="@color/colorAccent"
-            app:tikeStrSize="10dp"
-            app:startNumber="100"
-            app:maxNumber="1900"
-            app:centerCircleColor="@color/colorPrimary"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/fab_clear"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|right"
-            android:layout_marginRight="@dimen/fab_margin"
-            android:layout_marginBottom="88dp"
-            app:srcCompat="@android:drawable/ic_delete" />
+            <com.anderson.dashboardview.view.DashboardView
+                android:id="@+id/dashboard_view"
+                android:layout_width="280dp"
+                android:layout_height="280dp"
+                android:layout_gravity="top|center"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="20dp"
+                android:textSize="14dp"
+                android:text="Current Radiation"
+                app:unit="mGy/min"
+                app:progressStrokeWidth="16dp"
+                app:endProgressColor="#ff0000"
+                app:startProgressColor="#00ff00"
+                app:tikeStrArray="@array/dose"
+                app:tikeStrColor="@color/colorAccent"
+                app:tikeStrSize="10dp"
+                app:startNumber="0"
+                app:maxNumber="60"
+                app:centerCircleColor="@color/colorPrimary"/>
+
+
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:id="@+id/linear_layout_dose_record"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:showDividers="middle"
+                    android:divider="?android:dividerHorizontal"
+                    android:animateLayoutChanges="true"
+                    android:paddingLeft="16dp"
+                    android:paddingRight="16dp" />
+
+            </ScrollView>
+
+        </LinearLayout>
 
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/fab_toggle"
@@ -54,7 +72,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|right"
             android:layout_margin="@dimen/fab_margin"
-            app:srcCompat="@android:drawable/ic_menu_camera" />
+            app:srcCompat="@drawable/ic_play" />
 
     </FrameLayout>
 

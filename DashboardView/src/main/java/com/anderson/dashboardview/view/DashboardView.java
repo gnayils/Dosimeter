@@ -290,11 +290,11 @@ public class DashboardView extends View {
         float length;
         paintText.setTextSize(mTextSize);
         length = paintText.measureText(mText);
-        canvas.drawText(mText, -length / 2, mMinRingRadius * 2.0F, paintText);
-        paintText.setTextSize(mTextSize * 1.2f);
-        speed = StringUtil.floatFormat(startNum + (maxNum - startNum) * percent) + unit;
+        canvas.drawText(mText, -length / 2, mMinRingRadius * 2.5F, paintText);
+        paintText.setTextSize(mTextSize / 1.2f);
+        speed = StringUtil.floatFormat(startNum + (maxNum - startNum) * percent) + " " + unit;
         length = paintText.measureText(speed);
-        canvas.drawText(speed, -length / 2, mMinRingRadius * 2.5F, paintText);
+        canvas.drawText(speed, -length / 2, mMinRingRadius * 3F, paintText);
 
     }
 
